@@ -1,0 +1,48 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css' integrity='sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA==' crossorigin='anonymous' referrerpolicy='no-referrer')
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.1.0/mdb.min.css' integrity='sha512-nzSGtgaJWS79WO+bCKLhowPkjbM+WI18/K4T77XPB4QPMybSKLozMFzDNPEHcWxN1dOx1gvYGKP39nXLNNZ8qg==' crossorigin='anonymous' referrerpolicy='no-referrer')
+    link(rel='preconnect' href='https://fonts.googleapis.com')
+    link(rel='preconnect' href='https://fonts.gstatic.com' crossorigin='')
+    link(href='https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@200;300;400;600;700;900&display=swap' rel='stylesheet')
+
+    title= "Open Data Portal Ministry of Health Sri Lanka"
+
+  body 
+
+  nav.navbar.bg-light.navbar-default.navbar-expand-lg
+    .container-fluid
+      a.d-flex.align-items-center.navbar-brand.fs-3(href='/')
+        img.me-2(height='48' src='/images/logo.png' alt='Open Data Portal' title="Open Data Portal")
+        strong Open Data Portal
+      button.navbar-toggler(type='button' data-bs-toggle='collapse' data-bs-target='#navbarSupportedContent' aria-controls='navbarSupportedContent' aria-expanded='false' aria-label='Toggle navigation')
+        span.navbar-toggler-icon
+      #navbarSupportedContent.collapse.navbar-collapse
+        ul.navbar-nav.fw-semi-bold.me-auto.mb-2.mb-lg-0
+          li.nav-item
+            a.nav-link(href='/about') About
+          li.nav-item
+            a.nav-link(href='/documentation') Documentation
+          li.nav-item.dropdown
+            a.nav-link.dropdown-toggle(href='#' role='button' data-bs-toggle='dropdown' aria-expanded='false')
+              | More
+            ul.dropdown-menu
+              li
+                a.dropdown-item(href='#') Terms of user
+              li
+                a.dropdown-item(href='#') License
+              li
+                hr.dropdown-divider
+              li
+                a.dropdown-item(href='#') Contact
+  .container
+    block content
+
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js' integrity='sha512-6UofPqm0QupIL0kzS/UIzekR73/luZdC6i/kXDbWnLOJoqwklBK6519iUnShaYceJ0y4FaiPtX/hRnV/X/xlUQ==' crossorigin='anonymous' referrerpolicy='no-referrer')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js' integrity='sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g==' crossorigin='anonymous' referrerpolicy='no-referrer')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.1.0/mdb.min.js' integrity='sha512-oFBfx20Vuw8reYrngBlvcrgBmDcEAPE0Vv7Rb9b7JYZNHmDFdxZhiOTGm0CePa7ouSwfty9qwHQck1aVGWK5tA==' crossorigin='anonymous' referrerpolicy='no-referrer')
+
