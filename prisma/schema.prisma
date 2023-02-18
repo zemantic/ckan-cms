@@ -1,0 +1,675 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model activity {
+  id              String            @id
+  timestamp       DateTime?         @db.Timestamp(6)
+  user_id         String?
+  object_id       String?
+  revision_id     String?
+  activity_type   String?
+  data            String?
+  activity_detail activity_detail[]
+
+  @@index([object_id, timestamp], map: "idx_activity_object_id")
+  @@index([user_id, timestamp], map: "idx_activity_user_id")
+}
+
+model activity_detail {
+  id            String    @id
+  activity_id   String?
+  object_id     String?
+  object_type   String?
+  activity_type String?
+  data          String?
+  activity      activity? @relation(fields: [activity_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([activity_id], map: "idx_activity_detail_activity_id")
+}
+
+model alembic_version {
+  version_num String @id(map: "alembic_version_pkc") @db.VarChar(32)
+}
+
+model api_token {
+  id            String    @id
+  name          String?
+  user_id       String?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  last_access   DateTime? @db.Timestamp(6)
+  plugin_extras Json?
+  user          user?     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model dashboard {
+  user_id                     String   @id
+  activity_stream_last_viewed DateTime @db.Timestamp(6)
+  email_last_sent             DateTime @default(dbgenerated("LOCALTIMESTAMP")) @db.Timestamp(6)
+  user                        user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model group {
+  id                   String                 @id
+  name                 String                 @unique
+  title                String?
+  description          String?
+  created              DateTime?              @db.Timestamp(6)
+  state                String?
+  type                 String
+  approval_status      String?
+  image_url            String?
+  is_organization      Boolean?               @default(false)
+  group_extra          group_extra[]
+  group_extra_revision group_extra_revision[]
+  member               member[]
+  user_following_group user_following_group[]
+
+  @@index([id], map: "idx_group_id")
+  @@index([name], map: "idx_group_name")
+}
+
+model group_extra {
+  id       String  @id
+  group_id String?
+  key      String?
+  value    String?
+  state    String?
+  group    group?  @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([group_id], map: "idx_group_extra_group_id")
+}
+
+model group_extra_revision {
+  id                 String
+  group_id           String?
+  key                String?
+  value              String?
+  state              String?
+  revision_id        String
+  continuity_id      String?
+  expired_id         String?
+  revision_timestamp DateTime? @db.Timestamp(6)
+  expired_timestamp  DateTime? @db.Timestamp(6)
+  current            Boolean?
+  group              group?    @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  revision           revision  @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+  @@index([current], map: "idx_group_extra_current")
+  @@index([revision_timestamp, expired_timestamp, id], map: "idx_group_extra_period")
+  @@index([revision_timestamp, expired_timestamp, group_id], map: "idx_group_extra_period_group")
+}
+
+model group_revision {
+  id                 String
+  name               String
+  title              String?
+  description        String?
+  created            DateTime? @default(now()) @db.Timestamp(6)
+  state              String?
+  revision_id        String
+  continuity_id      String?
+  expired_id         String?
+  revision_timestamp DateTime? @db.Timestamp(6)
+  expired_timestamp  DateTime? @db.Timestamp(6)
+  current            Boolean?
+  type               String
+  approval_status    String?
+  image_url          String?
+  is_organization    Boolean?  @default(false)
+  revision           revision  @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+  @@index([current], map: "idx_group_current")
+  @@index([revision_timestamp, expired_timestamp, id], map: "idx_group_period")
+}
+
+model member {
+  id         String  @id
+  group_id   String?
+  table_id   String
+  state      String?
+  table_name String
+  capacity   String
+  group      group?  @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([group_id, table_id], map: "idx_extra_grp_id_pkg_id")
+  @@index([table_id], map: "idx_group_pkg_id")
+  @@index([group_id], map: "idx_package_group_group_id")
+  @@index([id], map: "idx_package_group_id")
+  @@index([table_id], map: "idx_package_group_pkg_id")
+  @@index([group_id, table_id], map: "idx_package_group_pkg_id_group_id")
+}
+
+model member_revision {
+  id                 String
+  table_id           String
+  group_id           String?
+  state              String?
+  revision_id        String
+  continuity_id      String?
+  expired_id         String?
+  revision_timestamp DateTime? @db.Timestamp(6)
+  expired_timestamp  DateTime? @db.Timestamp(6)
+  current            Boolean?
+  table_name         String
+  capacity           String
+  revision           revision  @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+  @@index([continuity_id], map: "idx_member_continuity_id")
+  @@index([current], map: "idx_package_group_current")
+  @@index([revision_timestamp, expired_timestamp, table_id, group_id], map: "idx_package_group_period_package_group")
+}
+
+/// This model has been renamed to 'Renamedpackage' during introspection, because the original name 'package' is reserved.
+model Renamedpackage {
+  id                                                                                             String                          @id
+  name                                                                                           String                          @unique @db.VarChar(100)
+  title                                                                                          String?
+  version                                                                                        String?                         @db.VarChar(100)
+  url                                                                                            String?
+  notes                                                                                          String?
+  author                                                                                         String?
+  author_email                                                                                   String?
+  maintainer                                                                                     String?
+  maintainer_email                                                                               String?
+  state                                                                                          String?
+  license_id                                                                                     String?
+  type                                                                                           String?
+  owner_org                                                                                      String?
+  private                                                                                        Boolean?                        @default(false)
+  metadata_modified                                                                              DateTime?                       @db.Timestamp(6)
+  creator_user_id                                                                                String?
+  metadata_created                                                                               DateTime?                       @db.Timestamp(6)
+  package_extra                                                                                  package_extra[]
+  package_member                                                                                 package_member[]
+  package_relationship_package_relationship_object_package_idToRenamedpackage                    package_relationship[]          @relation("package_relationship_object_package_idToRenamedpackage")
+  package_relationship_package_relationship_subject_package_idToRenamedpackage                   package_relationship[]          @relation("package_relationship_subject_package_idToRenamedpackage")
+  package_relationship_revision_package_relationship_revision_object_package_idToRenamedpackage  package_relationship_revision[] @relation("package_relationship_revision_object_package_idToRenamedpackage")
+  package_relationship_revision_package_relationship_revision_subject_package_idToRenamedpackage package_relationship_revision[] @relation("package_relationship_revision_subject_package_idToRenamedpackage")
+  package_tag                                                                                    package_tag[]
+  rating                                                                                         rating[]
+  user_following_dataset                                                                         user_following_dataset[]
+
+  @@index([creator_user_id], map: "idx_package_creator_user_id")
+  @@index([id], map: "idx_pkg_id")
+  @@index([name], map: "idx_pkg_name")
+  @@index([id, state], map: "idx_pkg_sid")
+  @@index([name, state], map: "idx_pkg_sname")
+  @@index([title, state], map: "idx_pkg_stitle")
+  @@index([title], map: "idx_pkg_title")
+  @@map("package")
+}
+
+model package_extra {
+  id             String          @id
+  key            String?
+  value          String?
+  state          String?
+  package_id     String?
+  Renamedpackage Renamedpackage? @relation(fields: [package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id, package_id], map: "idx_extra_id_pkg_id")
+  @@index([package_id], map: "idx_extra_pkg_id")
+}
+
+model package_extra_revision {
+  id                 String
+  key                String?
+  value              String?
+  revision_id        String
+  state              String?
+  package_id         String?
+  continuity_id      String?
+  expired_id         String?
+  revision_timestamp DateTime? @db.Timestamp(6)
+  expired_timestamp  DateTime? @db.Timestamp(6)
+  current            Boolean?
+  revision           revision  @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+  @@index([continuity_id], map: "idx_package_extra_continuity_id")
+  @@index([current], map: "idx_package_extra_current")
+  @@index([package_id, current], map: "idx_package_extra_package_id")
+  @@index([revision_timestamp, expired_timestamp, id], map: "idx_package_extra_period")
+  @@index([revision_timestamp, expired_timestamp, package_id], map: "idx_package_extra_period_package")
+  @@index([revision_id], map: "idx_package_extra_rev_id")
+}
+
+model package_member {
+  package_id     String
+  user_id        String
+  capacity       String
+  modified       DateTime       @db.Timestamp(6)
+  Renamedpackage Renamedpackage @relation(fields: [package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user           user           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([package_id, user_id])
+}
+
+model package_relationship {
+  id                                                                     String                          @id
+  subject_package_id                                                     String?
+  object_package_id                                                      String?
+  type                                                                   String?
+  comment                                                                String?
+  state                                                                  String?
+  Renamedpackage_package_relationship_object_package_idToRenamedpackage  Renamedpackage?                 @relation("package_relationship_object_package_idToRenamedpackage", fields: [object_package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Renamedpackage_package_relationship_subject_package_idToRenamedpackage Renamedpackage?                 @relation("package_relationship_subject_package_idToRenamedpackage", fields: [subject_package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  package_relationship_revision                                          package_relationship_revision[]
+}
+
+model package_relationship_revision {
+  id                                                                              String
+  subject_package_id                                                              String?
+  object_package_id                                                               String?
+  type                                                                            String?
+  comment                                                                         String?
+  revision_id                                                                     String
+  continuity_id                                                                   String?
+  state                                                                           String?
+  expired_id                                                                      String?
+  revision_timestamp                                                              DateTime?             @db.Timestamp(6)
+  expired_timestamp                                                               DateTime?             @db.Timestamp(6)
+  current                                                                         Boolean?
+  package_relationship                                                            package_relationship? @relation(fields: [continuity_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Renamedpackage_package_relationship_revision_object_package_idToRenamedpackage  Renamedpackage?       @relation("package_relationship_revision_object_package_idToRenamedpackage", fields: [object_package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  revision                                                                        revision              @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Renamedpackage_package_relationship_revision_subject_package_idToRenamedpackage Renamedpackage?       @relation("package_relationship_revision_subject_package_idToRenamedpackage", fields: [subject_package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+  @@index([current], map: "idx_package_relationship_current")
+  @@index([revision_timestamp, expired_timestamp, object_package_id, subject_package_id], map: "idx_period_package_relationship")
+}
+
+model package_revision {
+  id                 String
+  name               String    @db.VarChar(100)
+  title              String?
+  version            String?   @db.VarChar(100)
+  url                String?
+  notes              String?
+  author             String?
+  author_email       String?
+  maintainer         String?
+  maintainer_email   String?
+  revision_id        String
+  state              String?
+  continuity_id      String?
+  license_id         String?
+  expired_id         String?
+  revision_timestamp DateTime? @db.Timestamp(6)
+  expired_timestamp  DateTime? @db.Timestamp(6)
+  current            Boolean?
+  type               String?
+  owner_org          String?
+  private            Boolean?  @default(false)
+  metadata_modified  DateTime? @db.Timestamp(6)
+  creator_user_id    String?
+  metadata_created   DateTime? @db.Timestamp(6)
+  revision           revision  @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+  @@index([continuity_id], map: "idx_package_continuity_id")
+  @@index([current], map: "idx_package_current")
+  @@index([revision_timestamp, expired_timestamp, id], map: "idx_package_period")
+  @@index([id], map: "idx_pkg_revision_id")
+  @@index([name], map: "idx_pkg_revision_name")
+  @@index([revision_id], map: "idx_pkg_revision_rev_id")
+}
+
+model package_tag {
+  id             String          @id
+  state          String?
+  package_id     String?
+  tag_id         String?
+  Renamedpackage Renamedpackage? @relation(fields: [package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tag            tag?            @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "idx_package_tag_id")
+  @@index([package_id], map: "idx_package_tag_pkg_id")
+  @@index([tag_id, package_id], map: "idx_package_tag_pkg_id_tag_id")
+  @@index([tag_id], map: "idx_package_tag_tag_id")
+}
+
+model package_tag_revision {
+  id                 String
+  revision_id        String
+  state              String?
+  package_id         String?
+  tag_id             String?
+  continuity_id      String?
+  expired_id         String?
+  revision_timestamp DateTime? @db.Timestamp(6)
+  expired_timestamp  DateTime? @db.Timestamp(6)
+  current            Boolean?
+  revision           revision  @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tag                tag?      @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+  @@index([continuity_id], map: "idx_package_tag_continuity_id")
+  @@index([current], map: "idx_package_tag_current")
+  @@index([id], map: "idx_package_tag_revision_id")
+  @@index([package_id], map: "idx_package_tag_revision_pkg_id")
+  @@index([tag_id, package_id], map: "idx_package_tag_revision_pkg_id_tag_id")
+  @@index([revision_id], map: "idx_package_tag_revision_rev_id")
+  @@index([tag_id], map: "idx_package_tag_revision_tag_id")
+  @@index([revision_timestamp, expired_timestamp, package_id, tag_id], map: "idx_period_package_tag")
+}
+
+model rating {
+  id              String          @id
+  user_id         String?
+  user_ip_address String?
+  rating          Float?
+  created         DateTime?       @db.Timestamp(6)
+  package_id      String?
+  Renamedpackage  Renamedpackage? @relation(fields: [package_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user            user?           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "idx_rating_id")
+  @@index([package_id], map: "idx_rating_package_id")
+  @@index([user_id], map: "idx_rating_user_id")
+}
+
+model resource {
+  id                    String          @id
+  url                   String
+  format                String?
+  description           String?
+  position              Int?
+  hash                  String?
+  state                 String?
+  extras                String?
+  name                  String?
+  resource_type         String?
+  mimetype              String?
+  mimetype_inner        String?
+  size                  BigInt?
+  last_modified         DateTime?       @db.Timestamp(6)
+  cache_url             String?
+  cache_last_updated    DateTime?       @db.Timestamp(6)
+  webstore_url          String?
+  webstore_last_updated DateTime?       @db.Timestamp(6)
+  created               DateTime?       @db.Timestamp(6)
+  url_type              String?
+  package_id            String          @default("")
+  metadata_modified     DateTime?       @db.Timestamp(6)
+  resource_view         resource_view[]
+
+  @@index([id], map: "idx_package_resource_id")
+  @@index([package_id], map: "idx_package_resource_package_id")
+  @@index([url], map: "idx_package_resource_url")
+}
+
+model resource_revision {
+  id                    String
+  url                   String
+  format                String?
+  description           String?
+  position              Int?
+  revision_id           String
+  hash                  String?
+  state                 String?
+  continuity_id         String?
+  extras                String?
+  expired_id            String?
+  revision_timestamp    DateTime? @db.Timestamp(6)
+  expired_timestamp     DateTime? @db.Timestamp(6)
+  current               Boolean?
+  name                  String?
+  resource_type         String?
+  mimetype              String?
+  mimetype_inner        String?
+  size                  BigInt?
+  last_modified         DateTime? @db.Timestamp(6)
+  cache_url             String?
+  cache_last_updated    DateTime? @db.Timestamp(6)
+  webstore_url          String?
+  webstore_last_updated DateTime? @db.Timestamp(6)
+  created               DateTime? @db.Timestamp(6)
+  url_type              String?
+  package_id            String    @default("")
+  revision              revision  @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+  @@index([revision_id], map: "idx_package_resource_rev_id")
+  @@index([continuity_id], map: "idx_resource_continuity_id")
+  @@index([current], map: "idx_resource_current")
+  @@index([revision_timestamp, expired_timestamp, id], map: "idx_resource_period")
+}
+
+model resource_view {
+  id          String    @id
+  resource_id String?
+  title       String?
+  description String?
+  view_type   String
+  order       Int
+  config      String?
+  resource    resource? @relation(fields: [resource_id], references: [id], onDelete: Cascade)
+}
+
+model revision {
+  id                            String                          @id
+  timestamp                     DateTime?                       @db.Timestamp(6)
+  author                        String?                         @db.VarChar(200)
+  message                       String?
+  state                         String?
+  approved_timestamp            DateTime?                       @db.Timestamp(6)
+  group_extra_revision          group_extra_revision[]
+  group_revision                group_revision[]
+  member_revision               member_revision[]
+  package_extra_revision        package_extra_revision[]
+  package_relationship_revision package_relationship_revision[]
+  package_revision              package_revision[]
+  package_tag_revision          package_tag_revision[]
+  resource_revision             resource_revision[]
+  system_info_revision          system_info_revision[]
+
+  @@index([state], map: "idx_rev_state")
+  @@index([author], map: "idx_revision_author")
+}
+
+model system_info {
+  id                   Int                    @id @default(autoincrement())
+  key                  String                 @unique @db.VarChar(100)
+  value                String?
+  state                String                 @default("active")
+  system_info_revision system_info_revision[]
+}
+
+model system_info_revision {
+  id                 Int
+  key                String       @db.VarChar(100)
+  value              String?
+  revision_id        String
+  continuity_id      Int?
+  state              String       @default("active")
+  expired_id         String?
+  revision_timestamp DateTime?    @db.Timestamp(6)
+  expired_timestamp  DateTime?    @db.Timestamp(6)
+  current            Boolean?
+  system_info        system_info? @relation(fields: [continuity_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  revision           revision     @relation(fields: [revision_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, revision_id])
+}
+
+model tag {
+  id                   String                 @id
+  name                 String                 @db.VarChar(100)
+  vocabulary_id        String?                @db.VarChar(100)
+  package_tag          package_tag[]
+  package_tag_revision package_tag_revision[]
+  vocabulary           vocabulary?            @relation(fields: [vocabulary_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([name, vocabulary_id])
+  @@index([id], map: "idx_tag_id")
+  @@index([name], map: "idx_tag_name")
+}
+
+model task_status {
+  id           String    @id
+  entity_id    String
+  entity_type  String
+  task_type    String
+  key          String
+  value        String
+  state        String?
+  error        String?
+  last_updated DateTime? @db.Timestamp(6)
+
+  @@unique([entity_id, task_type, key])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model term_translation {
+  term             String
+  term_translation String
+  lang_code        String
+
+  @@index([term], map: "term")
+  @@index([term, lang_code], map: "term_lang")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model tracking_raw {
+  user_key         String    @db.VarChar(100)
+  url              String
+  tracking_type    String    @db.VarChar(10)
+  access_timestamp DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([access_timestamp], map: "tracking_raw_access_timestamp")
+  @@index([url], map: "tracking_raw_url")
+  @@index([user_key], map: "tracking_raw_user_key")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model tracking_summary {
+  url           String
+  package_id    String?
+  tracking_type String    @db.VarChar(10)
+  count         Int
+  running_total Int       @default(0)
+  recent_views  Int       @default(0)
+  tracking_date DateTime? @db.Date
+
+  @@index([tracking_date], map: "tracking_summary_date")
+  @@index([package_id], map: "tracking_summary_package_id")
+  @@index([url], map: "tracking_summary_url")
+  @@ignore
+}
+
+model user {
+  id                                                        String                   @id
+  name                                                      String                   @unique
+  apikey                                                    String?
+  created                                                   DateTime?                @db.Timestamp(6)
+  about                                                     String?
+  password                                                  String?
+  fullname                                                  String?
+  email                                                     String?
+  reset_key                                                 String?
+  sysadmin                                                  Boolean?                 @default(false)
+  activity_streams_email_notifications                      Boolean?                 @default(false)
+  state                                                     String                   @default("active")
+  plugin_extras                                             Json?
+  image_url                                                 String?
+  api_token                                                 api_token[]
+  dashboard                                                 dashboard?
+  package_member                                            package_member[]
+  rating                                                    rating[]
+  user_following_dataset                                    user_following_dataset[]
+  user_following_group                                      user_following_group[]
+  user_following_user_user_following_user_follower_idTouser user_following_user[]    @relation("user_following_user_follower_idTouser")
+  user_following_user_user_following_user_object_idTouser   user_following_user[]    @relation("user_following_user_object_idTouser")
+  zemantic_user                                             zemantic_user[]
+  zemantic_submission                                       zemantic_submission[]
+
+  @@index([id], map: "idx_user_id")
+  @@index([name], map: "idx_user_name")
+}
+
+model user_following_dataset {
+  follower_id    String
+  object_id      String
+  datetime       DateTime       @db.Timestamp(6)
+  user           user           @relation(fields: [follower_id], references: [id], onDelete: Cascade)
+  Renamedpackage Renamedpackage @relation(fields: [object_id], references: [id], onDelete: Cascade)
+
+  @@id([follower_id, object_id])
+}
+
+model user_following_group {
+  follower_id String
+  object_id   String
+  datetime    DateTime @db.Timestamp(6)
+  group       group    @relation(fields: [object_id], references: [id], onDelete: Cascade, map: "user_following_group_group_id_fkey")
+  user        user     @relation(fields: [follower_id], references: [id], onDelete: Cascade, map: "user_following_group_user_id_fkey")
+
+  @@id([follower_id, object_id])
+}
+
+model user_following_user {
+  follower_id                                String
+  object_id                                  String
+  datetime                                   DateTime @db.Timestamp(6)
+  user_user_following_user_follower_idTouser user     @relation("user_following_user_follower_idTouser", fields: [follower_id], references: [id], onDelete: Cascade)
+  user_user_following_user_object_idTouser   user     @relation("user_following_user_object_idTouser", fields: [object_id], references: [id], onDelete: Cascade)
+
+  @@id([follower_id, object_id])
+}
+
+model vocabulary {
+  id   String @id
+  name String @unique @db.VarChar(100)
+  tag  tag[]
+}
+
+model zemantic_user {
+  id         BigInt   @id @default(autoincrement())
+  mobile     String?
+  user       user     @relation(fields: [userId], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  userId     String
+}
+
+model zemantic_submission {
+  id                        BigInt                      @id @default(autoincrement())
+  title                     String
+  description               String
+  user                      user                        @relation(fields: [userId], references: [id])
+  created_at                DateTime                    @default(now())
+  updated_at                DateTime                    @default(now())
+  userId                    String
+  zemantic_submissions_file zemantic_submissions_file[]
+}
+
+model zemantic_tags {
+  id         BigInt   @id @default(autoincrement())
+  tag        String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+model zemantic_submissions_file {
+  id                    BigInt              @id @default(autoincrement())
+  file_name             String
+  file_type             String
+  file_size             Decimal
+  submission            zemantic_submission @relation(fields: [zemantic_submissionId], references: [id])
+  created_at            DateTime            @default(now())
+  updated_at            DateTime            @default(now())
+  zemantic_submissionId BigInt
+}
