@@ -663,7 +663,7 @@ model zemantic_tag {
   updated_at DateTime @default(now())
 }
 
-model zemantic_submissions_file {
+model zemantic_submission_file {
   id                    BigInt              @id @default(autoincrement())
   file_name             String
   file_type             String
