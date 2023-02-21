@@ -673,3 +673,11 @@ model zemantic_submissions_file {
   updated_at            DateTime            @default(now())
   zemantic_submissionId BigInt
 }
+
+model zemantic_setting {
+  id BigInt @id @default(autoincrement())
+  key String @unique
+  value String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
