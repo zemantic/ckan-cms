@@ -656,7 +656,7 @@ model zemantic_submission {
   zemantic_submissions_file zemantic_submissions_file[]
 }
 
-model zemantic_tags {
+model zemantic_tag {
   id         BigInt   @id @default(autoincrement())
   tag        String
   created_at DateTime @default(now())
