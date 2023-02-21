@@ -653,7 +653,7 @@ model zemantic_submission {
   created_at                DateTime                    @default(now())
   updated_at                DateTime                    @default(now())
   userId                    String
-  zemantic_submissions_file zemantic_submissions_file[]
+  zemantic_submissions_file zemantic_submission_file[]
 }
 
 model zemantic_tag {
