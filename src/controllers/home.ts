@@ -1,5 +1,6 @@
 import { prisma } from "../helpers/prisma";
 
+// get research dataset count
 export const getResearchDataCount = async () => {
   const researchGroupName = await prisma.zemantic_setting
     .findUnique({
@@ -8,6 +9,7 @@ export const getResearchDataCount = async () => {
       },
     })
     .catch((e) => {
+      console.log(e);
       return new Error(e);
     })
     .finally(async () => {
@@ -17,7 +19,7 @@ export const getResearchDataCount = async () => {
   if (researchGroupName instanceof Error) {
     return {
       status: 500,
-      message: "an error occured when getting research group name",
+      msg: "an error occured when getting research group name",
       data: null,
     };
   }
@@ -25,7 +27,7 @@ export const getResearchDataCount = async () => {
   if (!researchGroupName) {
     return {
       status: 500,
-      message: "research group name not set",
+      msg: "research group name not set",
       data: null,
     };
   }
@@ -37,6 +39,7 @@ export const getResearchDataCount = async () => {
       },
     })
     .catch((e) => {
+      console.log(e);
       return new Error(e);
     })
     .finally(async () => {
@@ -59,7 +62,7 @@ export const getResearchDataCount = async () => {
     };
   }
 
-  const researchData = await prisma.member
+  const researchDataCount = await prisma.member
     .count({
       where: {
         state: "active",
@@ -75,21 +78,22 @@ export const getResearchDataCount = async () => {
       await prisma.$disconnect();
     });
 
-  if (researchData instanceof Error) {
+  if (researchDataCount instanceof Error) {
     return {
-      state: 500,
+      status: 500,
       msg: "an error occured when counting research datasets",
       data: null,
     };
   }
 
   return {
-    state: 200,
+    status: 200,
     msg: "research data retrieved",
-    data: researchData,
+    data: researchDataCount,
   };
 };
 
+// get researcher account count
 export const getResearcherCount = async () => {
   const researcherCount = await prisma.zemantic_user
     .aggregate({
