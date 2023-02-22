@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getCategories,
+  getDatasets,
   getResearchDataCount,
   getResearcherCount,
 } from "../controllers/home";
@@ -36,4 +37,8 @@ route.get("/stats", async (req, res) => {
   });
 });
 
+route.get("/datasets", async (req, res) => {
+  const request = await getDatasets();
+  return res.status(request.status).json(request);
+});
 export { route as apiHomeRoutes };
