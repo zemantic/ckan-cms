@@ -168,12 +168,14 @@ export const getDatasets = async () => {
         private: false,
       },
       select: {
+        id: true,
         name: true,
         title: true,
         version: true,
         url: true,
         author: true,
         notes: true,
+        metadata_modified: true,
       },
       orderBy: {
         metadata_created: "desc",
