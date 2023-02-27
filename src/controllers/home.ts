@@ -159,3 +159,46 @@ export const getCategories = async () => {
     },
   };
 };
+
+// Get latest datasets to be displayed at home page
+export const getDatasets = async () => {
+  const datasets = await prisma.renamedpackage
+    .findMany({
+      where: {
+        private: false,
+      },
+      select: {
+        name: true,
+        title: true,
+        version: true,
+        url: true,
+        author: true,
+        notes: true,
+      },
+      orderBy: {
+        metadata_created: "desc",
+      },
+      skip: 0,
+      take: 10,
+    })
+    .catch((e) => {
+      return new Error(e);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+
+  if (datasets instanceof Error) {
+    return {
+      status: 500,
+      msg: "an unexpected error occured when retrieving datasets",
+      data: null,
+    };
+  }
+
+  return {
+    status: 200,
+    msg: "datasets retrieved",
+    data: datasets,
+  };
+};
