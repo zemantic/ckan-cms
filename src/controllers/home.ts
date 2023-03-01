@@ -130,7 +130,7 @@ export const getCategories = async () => {
       where: {
         state: "active",
         approval_status: "approved",
-        type: "group"
+        type: "group",
       },
       select: {
         name: true,
@@ -167,6 +167,7 @@ export const getDatasets = async () => {
     .findMany({
       where: {
         private: false,
+        state: "active",
       },
       select: {
         id: true,
