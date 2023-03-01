@@ -130,6 +130,7 @@ export const getCategories = async () => {
       where: {
         state: "active",
         approval_status: "approved",
+        type: "group"
       },
       select: {
         name: true,
