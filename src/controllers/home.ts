@@ -161,7 +161,7 @@ export const getCategories = async () => {
   }> = [];
 
   // Loop through categories and select active ones with datasets
-  categories.forEach(async (category) => {
+  for (const category of categories) {
     const categoryId = category.id;
     const findDatasets = await prisma.member
       .findFirst({
@@ -184,7 +184,7 @@ export const getCategories = async () => {
     } else if (findDatasets) {
       tempCategories.push(category);
     }
-  });
+  }
 
   return {
     status: 200,
