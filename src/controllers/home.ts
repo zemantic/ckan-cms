@@ -133,6 +133,7 @@ export const getCategories = async () => {
         type: "group",
       },
       select: {
+        id: true,
         name: true,
         title: true,
       },
@@ -152,11 +153,44 @@ export const getCategories = async () => {
     };
   }
 
+  // temp category variable to return as response
+  const tempCategories: Array<{
+    id: string;
+    name: string;
+    title: string | null;
+  }> = [];
+
+  // Loop through categories and select active ones with datasets
+  categories.forEach(async (category) => {
+    const categoryId = category.id;
+    const findDatasets = await prisma.member
+      .findFirst({
+        where: {
+          group_id: categoryId,
+          table_name: "package",
+          state: "active",
+          capacity: "public",
+        },
+      })
+      .catch((e) => {
+        return new Error(e);
+      })
+      .finally(async () => {
+        await prisma.$disconnect();
+      });
+
+    if (findDatasets instanceof Error) {
+      console.log("an error occured");
+    } else if (findDatasets) {
+      tempCategories.push(category);
+    }
+  });
+
   return {
     status: 200,
     message: "categories fetched",
     data: {
-      categories: categories,
+      categories: tempCategories,
     },
   };
 };
